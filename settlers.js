@@ -73,8 +73,25 @@ function Tile() {
 }
 Tile.prototype = new Drawable();
 
-var types = ["wheat", "ore", "sheep", "wood", "brick", "desert"];
+var types = [];
+for( var i=0; i<4; i++ ) {
+        if( i < 3 ) {
+                types.push("ore");
+                types.push("brick");
+        }
+        types.push("wheat");
+        types.push("sheep");
+        types.push("wood");
+        
+}
+types.push("desert");
 shuffle( types );
+
+var origin = [0,0];
+var tW = imageRepository.images["wheat_tile"].width;
+var tH = imageRepository.images["wheat_tile"].height;
+
+
 
 function Game() {
         this.init = function() {
@@ -88,12 +105,28 @@ function Game() {
                         Tile.prototype.canvasHeight = this.bgCanvas.height;
                         
                         this.tiles = []
-                        for( var i=0; i<5; i++ ) {
-                                var type = types[i%types.length]
-                                var tImg = type + "_tile";
-                                this.tiles[i] = new Tile();
-                                this.tiles[i].set( type, i );
-                                this.tiles[i].init( 0+imageRepository.images[tImg].width*i, 0+10*i, imageRepository.images[tImg].width, imageRepository.images[tImg].height );
+                        var adj = [0,1,2,1,0];
+                        var yInc = 7;
+                        var s = 0;
+                        var pos = [3,4,5,4,3];
+                        var origin = [this.bgCanvas.width/2 - imageRepository.images["wheat_tile"].width*1.5,this.bgCanvas.height/6];
+                        //alert( origin );
+                        for( var j=0; j<pos.length; j++ ) {
+                                this.tiles[j] = [];
+                                
+                                for( var i=0; i<pos[j]; i++ ) { 
+                                        //var type = types[(i+j)%types.length];
+                                        var type = types.pop();
+                                        var tImg = type + "_tile";
+                                                
+                                        this.tiles[j][i] = new Tile();
+                                        this.tiles[j][i].set( type, i );
+                                        var xpos = Math.floor( origin[0] + (imageRepository.images[tImg].width * i) - (imageRepository.images[tImg].width/2)*adj[j] );
+                                        var ypos = Math.floor( origin[1] + yInc*s + (imageRepository.images[tImg].height/3)*2*j );
+                                        //alert( xpos + ", " + ypos );
+                                        this.tiles[j][i].init( xpos, ypos, imageRepository.images[tImg].width, imageRepository.images[tImg].height );
+                                }
+                                s++;
                         }
                         
                         return true;
@@ -103,8 +136,11 @@ function Game() {
         };       
         
         this.start = function() {
-                for( var i=0; i<this.tiles.length; i++ ) {
-                        this.tiles[i].draw();
+                for( var j=0; j<this.tiles.length; j++ ) {
+                        for( var i=0; i<this.tiles[j].length; i++ ) {
+                                if( this.tiles[j][i] != 0 )
+                                        this.tiles[j][i].draw();
+                        }
                 }
         };
 }
